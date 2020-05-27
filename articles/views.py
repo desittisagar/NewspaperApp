@@ -1,13 +1,38 @@
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView, CreateView
 from django.views.generic.edit import UpdateView, DeleteView
-from .models import Article
+from .models import Article, Comment
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 # Create your views here.
 
 #ArticleDetailView, ArticleUpdateView, ArticleDeleteView
+class CommentCreateView(LoginRequiredMixin, CreateView):
+	model = Comment
+	template_name = 'comment_new.html'
+	fields = ('comment',)
+	login_url = 'login'
+	success_url = reverse_lazy('article_list')
+
+	def form_valid(self, form):
+		form.instance.author = self.request.user
+		pk = self.kwargs.get('pk')
+		obj = Article.objects.filter(pk=pk)
+		#print(obj.first())
+		form.instance.article = obj.first()
+		#print("try", self.request.POST)
+		#pk = self.kwargs.get('pk')
+		#print(Article.objects.filter(pk=pk))
+		print(self.kwargs.get('pk'))
+		print(form.instance.author)
+		print(form.instance)
+		#print(form.instance.article)
+		#print(Comment.article.filter(pk=pk))
+		# print("\n\n")
+		#form.instance.article = self.request.article
+		return super().form_valid(form)
+
 
 class ArticleCreateView(LoginRequiredMixin, CreateView):
 	model = Article
